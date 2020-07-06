@@ -33,13 +33,10 @@
           height="3vw"
           width="3vw"
         ></v-img>
-        <v-card-title> Character Info - {{ now.name }} </v-card-title>
+        <v-card-title> Character Info - {{ currentName }} </v-card-title>
         <v-card-text>
           <p>Suffering: {{ currentS }}%, Deserve: {{ currendD }}%</p>
-          <p>{{ now.description }}</p>
-          <p>{{ now.deserve }}</p>
-          <p>{{ now.suffer }}</p>
-          <p>{{ now.details }}</p>
+          <div v-html="currentContent"></div>
         </v-card-text>
         <v-card-actions>
           <v-btn color="primary" text @click="modal = false">
@@ -52,7 +49,9 @@
 </template>
 
 <script>
-import data from '~/lang/zh.json'
+import marked from 'marked'
+import dompurify from 'dompurify'
+import data from '~/static/data/zh/names.json'
 
 export default {
   data() {
@@ -85,7 +84,8 @@ export default {
       currentModal: '',
       currentS: 0,
       currendD: 0,
-      now: {},
+      currentName: '',
+      currentContent: '',
     }
   },
   methods: {
@@ -93,20 +93,17 @@ export default {
       this.currentS = s
       this.currendD = d
       this.modal = true
-      this.$set(
-        this,
-        'now',
-        Object.assign(
-          {
-            name: '',
-            description: '',
-            suffer: '',
-            deserve: '',
-            details: '',
-          },
-          data[`s${s}d${d}`]
-        )
-      )
+      const entityId = `s${s}_d${d}`
+      this.currentName = data[entityId] || ''
+      this.currentContent = 'loading...'
+      fetch(`/data/zh/content/${entityId}.md`)
+        .then((x) => x.text())
+        .then((x) => {
+          this.currentContent = marked(dompurify.sanitize(x))
+        })
+        .catch((x) => {
+          this.currentContent = '暂无数据'
+        })
     },
   },
 }
