@@ -33,14 +33,16 @@
           height="3vw"
           width="3vw"
         ></v-img>
-        <v-card-title> Character Info - {{ currentName }} </v-card-title>
+        <v-card-title>
+          {{ $t('Character Info') }} - {{ currentName }}
+        </v-card-title>
         <v-card-text>
           <p>Suffering: {{ currentS }}%, Deserve: {{ currendD }}%</p>
           <div v-html="currentContent"></div>
         </v-card-text>
         <v-card-actions>
           <v-btn color="primary" text @click="modal = false">
-            Close
+            {{ $t('Close') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -88,6 +90,7 @@ export default {
       currentContent: '',
     }
   },
+  middleware: ['setLanguage'],
   methods: {
     triggerModal(s, d) {
       this.currentS = s
@@ -95,14 +98,14 @@ export default {
       this.modal = true
       const entityId = `s${s}_d${d}`
       this.currentName = data[entityId] || ''
-      this.currentContent = 'loading...'
+      this.currentContent = this.$t('loading...')
       fetch(`/data/zh/content/${entityId}.md`)
         .then((x) => x.text())
         .then((x) => {
           this.currentContent = marked(dompurify.sanitize(x))
         })
         .catch((x) => {
-          this.currentContent = '暂无数据'
+          this.currentContent = this.$t('(no data)')
         })
     },
   },
